@@ -52,6 +52,7 @@ def get_text_messages(message):
             if result:
                 answer = result['choices'][0]['message']['content']
                 bot.send_message(message.from_user.id, answer)
+                # Занесение запроса в базу данных
                 data = (message.from_user.id, message.text, answer)
                 cursor.execute("INSERT INTO history (chat_user, user_text, answer) VALUES (%s, %s, %s)", data)
 
