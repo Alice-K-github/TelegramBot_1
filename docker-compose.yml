@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    command: >
+        bash -c "python bot.py"
+    env_file:
+      - .env
+    environment:
+      - DEBUG=True
+      - DATABASE_HOST=db  # Использование имени сервиса db как хоста базы данных
+    volumes:
+      - .:/code
+      - static_volume:/code/static
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=${DBname}
+      - POSTGRES_USER=${PUser}
+      - POSTGRES_PASSWORD=${Password}
+      - POSTGRES_HOST=db
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h db -p 5432 -U ${PUser} -d ${DBname} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+  static_volume:

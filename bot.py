@@ -8,6 +8,7 @@ import psycopg2
 conn = psycopg2.connect(dbname=config('DBname'), user=config('PUser'), password=config('Password'), host=config('Host'), port=config('Port'))
 cursor = conn.cursor()
 
+
 # Подключение к боту Телеграмма по токену
 bot = telebot.TeleBot(config('TokenBot'))
 
@@ -23,6 +24,8 @@ giga = GigaChat(
 # Работа с отправленными сообщениями пользователя в телеграм-боте
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
+    cursor.execute("CREATE TABLE IF NOT EXISTS history (id SERIAL PRIMARY KEY, chat_user text, user_text text,answer text)")
+    conn.commit()
     if message.text == "/start":
         bot.send_message(message.from_user.id, "Привет! Бот работает!")
     elif message.text == "/help":
@@ -40,6 +43,7 @@ def get_text_messages(message):
                 data = (message.from_user.id, message.text, response_chat)
                 cursor.execute("INSERT INTO history (chat_user, user_text, answer) VALUES (%s, %s, %s)", data)
                 conn.commit()
+
 
 # Проверка наличия сообщений телеграм-бота
 bot.polling(none_stop=True, interval=0)
